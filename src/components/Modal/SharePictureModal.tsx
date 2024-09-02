@@ -8,28 +8,60 @@ import {
   IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { useNavigate } from 'react-router-dom';
+import { sharePost } from '../../services/sharePost';
 
 interface SharePictureModalProps {
   open: boolean;
   onClose: () => void;
-  onShare: (url: string, title: string) => void;
 }
 
 const SharePictureModal: React.FC<SharePictureModalProps> = ({
   open,
   onClose,
-  onShare,
 }) => {
   const [url, setUrl] = useState('');
   const [title, setTitle] = useState('');
+  const [urlError, setUrlError] = useState('');
+  const [titleError, setTitleError] = useState('');
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (url && title) {
-      onShare(url, title);
-      setUrl('');
-      setTitle('');
-      onClose();
+  const handleSubmit = async (e: React.FormEvent) => {
+    try {
+      e.preventDefault();
+      // Reset errors
+      setUrlError('');
+      setTitleError('');
+
+      // Regex for URL validation
+      const urlPattern =
+        /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?.(jpg|jpeg|png|gif|bmp|webp)$/;
+
+      const titlePattern = /^[A-Za-z]+$/;
+
+      // Validate URL
+      if (!urlPattern.test(url)) {
+        setUrlError('Please enter a valid URL.');
+        return;
+      }
+
+      // Validate Title
+      if (!titlePattern.test(title)) {
+        setTitleError('Title must contain only letters without any spaces.');
+        return;
+      }
+
+      // If all validations pass
+      if (url && title) {
+        await sharePost(url, title);
+        onClose(); // Close the modal
+        navigate('/');
+        setUrl('');
+        setTitle('');
+        onClose();
+      }
+    } catch (error) {
+      throw error;
     }
   };
 
@@ -71,6 +103,8 @@ const SharePictureModal: React.FC<SharePictureModalProps> = ({
             label="New picture URL"
             variant="outlined"
             fullWidth
+            error={!!urlError}
+            helperText={urlError}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
           />
@@ -78,9 +112,12 @@ const SharePictureModal: React.FC<SharePictureModalProps> = ({
             label="Title"
             variant="outlined"
             fullWidth
+            error={!!titleError}
+            helperText={titleError}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
           />
+
           <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
             <Button onClick={onClose} sx={{ mr: 2 }}>
               Cancel

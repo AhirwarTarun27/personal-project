@@ -8,22 +8,33 @@ import {
   Tab,
   Box,
 } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import SharePictureModal from '../Modal/SharePictureModal';
 
 interface HeaderProps {
   currentTab: string;
   onTabChange: (event: React.SyntheticEvent, newValue: string) => void;
+  onLogout: () => void;
+  isLoggedIn: boolean;
 }
 
-const Header: React.FC<HeaderProps> = ({ currentTab, onTabChange }) => {
+const Header: React.FC<HeaderProps> = ({
+  currentTab,
+  onTabChange,
+  onLogout,
+  isLoggedIn,
+}) => {
   const [modalOpen, setModalOpen] = useState(false);
+
+  const navigate = useNavigate();
+
+  const userName = localStorage.getItem('userName') || 'user';
 
   const handleOpenModal = () => setModalOpen(true);
   const handleCloseModal = () => setModalOpen(false);
 
-  const handleShare = (url: string, title: string) => {
-    console.log('Shared Picture:', { url, title });
+  const handleLogin = () => {
+    navigate('/login');
   };
 
   return (
@@ -40,7 +51,6 @@ const Header: React.FC<HeaderProps> = ({ currentTab, onTabChange }) => {
         }}
       >
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-          {/* Left Section: Logo */}
           <Box
             sx={{
               display: 'flex',
@@ -57,44 +67,63 @@ const Header: React.FC<HeaderProps> = ({ currentTab, onTabChange }) => {
               PicShare
             </Typography>
 
-            <Tabs value={currentTab} onChange={onTabChange} textColor="inherit">
-              <Tab label="Home" value="home" component={Link} to="/" />
-              <Tab
-                label="Favorite"
-                value="favorite"
-                component={Link}
-                to="/favourites"
-              />
-            </Tabs>
+            {isLoggedIn && (
+              <Tabs
+                value={currentTab}
+                onChange={onTabChange}
+                textColor="inherit"
+              >
+                <Tab label="Home" value="home" component={Link} to="/" />
+                <Tab
+                  label="Favorite"
+                  value="favorites"
+                  component={Link}
+                  to="/favourites"
+                />
+              </Tabs>
+            )}
           </Box>
 
-          {/* Right Section: Share Button and User Info */}
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <Button
-              variant="contained"
-              color="primary"
-              sx={{ textTransform: 'none', marginRight: '16px' }}
-              onClick={handleOpenModal}
-            >
-              Share Pic
-            </Button>
-            <Typography sx={{ marginRight: '16px' }}>Hi Neekey</Typography>
-            <Button
-              variant="text"
-              color="primary"
-              sx={{ textTransform: 'none' }}
-            >
-              Log out
-            </Button>
+            {isLoggedIn ? (
+              <>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  sx={{ textTransform: 'none', marginRight: '16px' }}
+                  onClick={handleOpenModal}
+                >
+                  Share Pic
+                </Button>
+                <Typography sx={{ marginRight: '16px' }}>
+                  Hi {userName}
+                </Typography>
+                <Button
+                  variant="text"
+                  color="primary"
+                  sx={{ textTransform: 'none' }}
+                  onClick={onLogout}
+                >
+                  Log out
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="contained"
+                color="primary"
+                sx={{ textTransform: 'none' }}
+                onClick={handleLogin}
+              >
+                Log in
+              </Button>
+            )}
           </Box>
         </Toolbar>
       </AppBar>
 
-      <SharePictureModal
-        open={modalOpen}
-        onClose={handleCloseModal}
-        onShare={handleShare}
-      />
+      {modalOpen && isLoggedIn && (
+        <SharePictureModal open={modalOpen} onClose={handleCloseModal} />
+      )}
     </>
   );
 };
