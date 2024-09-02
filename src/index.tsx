@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import reportWebVitals from './reportWebVitals';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import LoadingComponent from './components/LoadingComponent/LoadingComponent';
 
 const Layout = React.lazy(() => import('./layout'));
 const HomePage = React.lazy(() => import('./pages/home/Home'));
@@ -12,21 +12,15 @@ const FavouritesPage = React.lazy(
 );
 const Login = React.lazy(() => import('./pages/login/Login'));
 
-const queryClient = new QueryClient();
-
 const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <Suspense fallback={<div>Loading layout...</div>}>
-        <Layout />
-      </Suspense>
-    ),
+    element: <Layout />,
     children: [
       {
         index: true,
         element: (
-          <Suspense fallback={<div>Loading home page...</div>}>
+          <Suspense fallback={<LoadingComponent text="Loading home page" />}>
             <HomePage />
           </Suspense>
         ),
@@ -56,9 +50,7 @@ const root = ReactDOM.createRoot(
 );
 root.render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
-    </QueryClientProvider>
+    <RouterProvider router={router} />
   </React.StrictMode>
 );
 
