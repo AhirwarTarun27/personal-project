@@ -43,9 +43,6 @@ const ExpandMore = styled((props: ExpandMoreProps) => {
   ],
 }));
 
-interface ImageCardProps {
-  imageUrl: string;
-}
 export const ImageCard = ({ image }: any) => {
   const [expanded, setExpanded] = React.useState(false);
 
